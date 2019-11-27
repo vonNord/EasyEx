@@ -17,7 +17,9 @@ And then, when you click:
 ![Clicked state](img/screenshot2.png)
 
 
-1.	Create the app (I optimistically named mine easyex):
+1.	Goto github and grab a copy of the code: https://github.com/vonNord/EasyEx
+
+1.  Create the app (I optimistically named mine easyex):
 
     ```
     npx create-react-app easyex –typescript
