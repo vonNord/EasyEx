@@ -18,50 +18,53 @@ And then, when you click:
 
 
 1.	Goto github and grab a copy of the code: https://github.com/vonNord/EasyEx
+1.  Run ```npm install``` in the root directory
 
-1.  If you want to create such an app (I optimistically named mine easyex):
+    If you want to create such an app (I optimistically named mine easyex):
 
-    ```
-    npx create-react-app easyex –typescript
-    cd easyex
-    npm install redux
-    npm install react-redux
-    npm install --save.dev @types/react-redux
-    npm install redux-thunk
-    npm install --save.dev @types/redux-thunk
-    ```
+        ```
+        npx create-react-app easyex –typescript
+        cd easyex
+        npm install redux
+        npm install react-redux
+        npm install --save.dev @types/react-redux
+        npm install redux-thunk
+        npm install --save.dev @types/redux-thunk
+        ```
 
 1.	Open the easyex folder with VS Code
+
 1.	Open index.tsx. We need to make a top level component “Root” because we want to wrapp all components with the react-redux Provider component. The Provider holds the store and cooperates with the connect function to give the components in the Left and Right components the props they need.
 
-```tsx
-import React from "react";
-import ReactDOM from "react-dom";
-import { Provider } from "react-redux";
-import "./index.css";
-import App from "./App";
-import { Store, AnyAction } from "redux";
-import configureStore, { IApplicationState } from "./Store";
+    ```tsx
+    import React from "react";
+    import ReactDOM from "react-dom";
+    import { Provider } from "react-redux";
+    import "./index.css";
+    import App from "./App";
+    import { Store, AnyAction } from "redux";
+    import configureStore, { IApplicationState } from "./Store";
 
-interface IProps {
-    store: Store<IApplicationState>;
-}
-const Root: React.SFC< IProps > = props => {
-    console.log("Root:rendering");
-    return (
-        <Provider store={props.store}>
-            <App />
-        </Provider>);
-};
+    interface IProps {
+        store: Store<IApplicationState>;
+    }
+    const Root: React.SFC< IProps > = props => {
+        console.log("Root:rendering");
+        return (
+            <Provider store={props.store}>
+                <App />
+            </Provider>);
+    };
 
-console.log( "index:configure store");
-const store: Store< IApplicationState, AnyAction> = configureStore();
-ReactDOM.render(<Root store={store} />
-    , document.getElementById("root"));
-```
-4.	It is wise to separate things in your application by entity, or area, instead of by filetype. I would advise you not to make a folder for all the types, and another for all the actions etc.
-It is far better to make a folder for each area your application handles. In this case it is the raining area that is separated from the rest, and I have therefor a “raining” folder that contains the types, actions, reducer for the raining things. Even the components since they only work with raining stuff.
-1.  Remove the logo and the header section in App.tsx:
+    console.log( "index:configure store");
+    const store: Store< IApplicationState, AnyAction> = configureStore();
+    ReactDOM.render(<Root store={store} />
+        , document.getElementById("root"));
+    ```
+1.	It is wise to separate things in your application by entity, or area, instead of by filetype. I would advise against making a folder for all the types, and another for all the actions etc.
+
+    It is far better to make a folder for each area your application handles. In this case it is the raining area that is separated from the rest, and I have therefor a “raining” folder that contains the types, actions, reducer for the raining things. Even the components since they only work with raining stuff.
+1.  Here is the clean and simple App.tsx:
     ```tsx
     import React from "react";
     import "./App.css";
@@ -75,63 +78,67 @@ It is far better to make a folder for each area your application handles. In thi
         </div>
     );
     ```
-As you see, we are using two components, LeftComp and RightComp, that we haven’t created yet. We place them side by side (we’ll add some css later to make them stay side by side).
+    As you see, we are using two components, LeftComp and RightComp, that we haven’t created yet. We place them side by side (we’ll add some css later to make them stay side by side).
 
-6.	Let us make the Left component:
+1.	Let us make the Left component:
+    ```tsx
+    import * as React from "react";
+    import { toggleRain } from "./RainingActions";
+    import { connect } from "react-redux";
+    import { IApplicationState } from "../Store";
 
-```tsx
-import * as React from "react";
-import { toggleRain } from "./RainingActions";
-import { connect } from "react-redux";
-import { IApplicationState } from "../Store";
+    interface IProps {
+        onCheckboxClick: typeof toggleRain;
+    }
 
-interface IProps {
-    onCheckboxClick: typeof toggleRain;
-}
+    const LeftComp: React.SFC<IProps> = (props: IProps) => {
+        const handleCheckboxClick = () => {
+            console.log("LeftComp:handleCheckboxClick");
+            props.onCheckboxClick();
+        };
 
-const LeftComp: React.SFC<IProps> = (props: IProps) => {
-    const handleCheckboxClick = () => {
-        console.log("LeftComp:handleCheckboxClick");
-        props.onCheckboxClick();
-    };
-
-    console.log("LeftComp:rendering" );
-    return (
-        <div className="comp-container LeftComp">
-            LeftComp
-            <div className="comp-container-A">
-                <div className="comp-container-B">
-                    Is it raining?
-                    <input type="checkbox" onChange={handleCheckboxClick} />
+        console.log("LeftComp:rendering" );
+        return (
+            <div className="comp-container LeftComp">
+                LeftComp
+                <div className="comp-container-A">
+                    <div className="comp-container-B">
+                        Is it raining?
+                        <input type="checkbox" onChange={handleCheckboxClick} />
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-};
-
-const mapDispatchToProps = (dispatch: any) => {
-    console.log("LeftComp:mapDispatchToProps");
-    return {
-        onCheckboxClick: () => dispatch(toggleRain())
+        );
     };
-};
 
-const mapStateToProps = (store: IApplicationState) => {
-    console.log("LeftComp:mapStateToProps", store.rain.rainState );
-    return {
+    const mapDispatchToProps = (dispatch: any) => {
+        console.log("LeftComp:mapDispatchToProps");
+        return {
+            onCheckboxClick: () => dispatch(toggleRain())
+        };
     };
-};
 
-export default connect(mapStateToProps, mapDispatchToProps)(LeftComp);
-```
+    const mapStateToProps = (store: IApplicationState) => {
+        console.log("LeftComp:mapStateToProps", store.rain.rainState );
+        return {
+        };
+    };
 
-7.	As you see, lots and lots of details here, but let us focus on the important stuff:
-    1.  We have a Props interface that only contains a function. This function we shall call when the user clicks on the checkbox, as you see in the handleCheckboxClick function.
-    2.	Then we have the render function, which mostly tries to center the content, but also manages to hook up he onChange function on the checkbox.
-    3.	Then we have the mapDispatchToProps function. What it does is instruct react-redux what to do when the onCheckboxClick function is called.  As you see, it will provide you with a dispatcher, which you use to call the toggleRain function. toggleRain will create an Action which will call the reducer which will update the store.
+    export default connect(mapStateToProps, mapDispatchToProps)(LeftComp);
+    ```
+
+    As you see, lots and lots of details here, but let us focus on the important stuff:
+    1.	Let's start with the render function, which mostly tries to center the content, but also manages to hook up the onChange function on the checkbox to handleCheckboxClick. This function is obviously central in changing the state.
+    1.  Let's look at the handleCheckboxClick function then. It just calls the props onCheckboxClick function. 
+    1.  Which leads our investigation to the props interface. We have a Props interface that only contains a function. But wht wil happen when that props function is called?
+    1.  The answer is in the mapDispatchToProps function. It instructs react-redux what to do when the onCheckboxClick function is called. As you see, it will provide you with a dispatcher, which you use to call the toggleRain function. (toggleRain will create an Action which will call the reducer which will update the store. But we are getting a little ahead of ourselves here.)
     This function we give to react-redux in the last line through the connect function.
-    4.	The mapStateToProps function does not do anything, because we do not have anything in the state that shall be inserted into the props. (We could insert the value for the checkbox here, but I’m trying to make this example very simple.)
-    5.	Finally, we call the magic connect function from react-redux that hooks everything up. What is up with those second parentheses? Well, connect is a function that returns a function, the second set of parentheses are for that function. We could so this instead:
+
+
+    1.	The mapStateToProps function does not do anything, because we do not have anything in the state that shall be inserted into the props. (We could insert the value for the checkbox here, but I’m trying to make this example very simple. More about this in the next example.)
+    1.	Finally, we call the magic connect function from react-redux that hooks everything up. 
+    
+        But one thing first: What is up with those second parentheses? Well, connect is a function that returns a function, the second set of parentheses are for that function. We could so this instead:
 
         ```typescript
         const connected 
@@ -145,180 +152,182 @@ export default connect(mapStateToProps, mapDispatchToProps)(LeftComp);
 
     1.  Notice that we export the return value from the connect as default here. This is important. When App.tsx imports something it calls LeftComp, it is not the LeftComp component, but rather the connect return value. The real return value is a component that wraps the LeftComp.
     
-        When we look at the app from the Components view in React Developer Tools in chrome (or firefox), we see that there are two layers between the App’s div and the real LeftComp. One called “LeftComp” (but which is not) and the second one is a Context.Provider.
+        When we look at the app from the Components view in React Developer Tools in chrome (or firefox), we see that there are two layers between the App’s div and the real LeftComp. One called “LeftComp” (which is like a fake facade) and the second one is a Context.Provider.
         
         The Context.Provider will use the two functions, mapDispatchToProps and mapStateToProps, to create the LeftComp’s props for you. And when the props change, React will call render which will draw the component (again).
 
-![Components viewed in REact Developer tools](img/screenshot3.png)
+![Components viewed in Raact Developer tools](img/screenshot3.png)
     
 8.	We then look at the RightComponent:
-```tsx
-import * as React from "react";
+    ```tsx
+    import * as React from "react";
 
-import { connect } from "react-redux";
-import { IApplicationState } from "../Store";
+    import { connect } from "react-redux";
+    import { IApplicationState } from "../Store";
 
-interface IProps {
-    isItRaining: boolean;
-}
+    interface IProps {
+        isItRaining: boolean;
+    }
 
-const RightComp: React.SFC<IProps> = (props: IProps) => {
-    console.log("RightComp:rendering", props.isItRaining );
-    return (
-        <div className="comp-container RightComp">
-            RightComp
-            <div className="comp-container-A">
-                <div className="comp-container-B">
-                    <h1>{props.isItRaining 
-                 ? "Its raining. Better bring an umbrella, then." 
-                 : "Its not raining!"}
-              </h1>
+    const RightComp: React.SFC<IProps> = (props: IProps) => {
+        console.log("RightComp:rendering", props.isItRaining );
+        return (
+            <div className="comp-container RightComp">
+                RightComp
+                <div className="comp-container-A">
+                    <div className="comp-container-B">
+                        <h1>{props.isItRaining 
+                    ? "Its raining. Better bring an umbrella, then." 
+                    : "Its not raining!"}
+                </h1>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-};
-
-const mapStateToProps = (store: IApplicationState) => {
-    console.log("RightComp:mapStateToProps", store.rain.rainState);
-    return {
-        isItRaining: store.rain.rainState
+        );
     };
-};
-```
-9.	The important stuff:
+
+    const mapStateToProps = (store: IApplicationState) => {
+        console.log("RightComp:mapStateToProps", store.rain.rainState);
+        return {
+            isItRaining: store.rain.rainState
+        };
+    };
+
+    const connected = connect( mapStateToProps );
+    export default connected(RightComp);
+    ```
     1.	This component has a props with only a Boolean, isItRaining, which reflects the state of the checkbox.
-    1.	It uses this props to use one of the two texts to show.
+    1.	It uses this props to use one of the two texts to show in the return (render) part.
     1.	Since the component doesn’t change any state, it doesn’t have any mapDispatchToProps function.
     1.	It has a mapStateToProps function, which takes the store.rain.rainState and uses it to set the local props isItRaining.
     1.	Finally, we call the connect function, like before.
 
 
->*So, a little timeout: We have the two components. The left has a checkbox. When a user toggles this checkbox, the component updates the state in the store. react-redux observes that the state that the right component uses is changed and updates the component.*
+    >*So, a little timeout: We have the two components. The left has a checkbox. When a user toggles this checkbox, the component updates the state in the store. react-redux observes that the state that the right component uses is changed and updates the component.*
 
-10.  The store? 
-```typescript
-import { applyMiddleware, combineReducers, createStore, Store, AnyAction 
-} from "redux";
-import thunk from "redux-thunk";
+1.  The store? 
+    ```typescript
+    import { applyMiddleware, combineReducers, createStore, Store, AnyAction 
+    } from "redux";
+    import thunk from "redux-thunk";
 
-import { rainingReducer } from "./raining/RainingReducer";
-import { IRainingState } from "./raining/RainingTypes";
+    import { rainingReducer } from "./raining/RainingReducer";
+    import { IRainingState } from "./raining/RainingTypes";
 
-export interface IApplicationState {
-    rain: IRainingState;
-}
+    export interface IApplicationState {
+        rain: IRainingState;
+    }
 
-const rootReducer = combineReducers<IApplicationState>({
-    rain: rainingReducer
-});
+    const rootReducer = combineReducers<IApplicationState>({
+        rain: rainingReducer
+    });
 
-export default function configureStore(): Store<IApplicationState> {
-    console.log("Store:configureStore");
-    const store: Store< IApplicationState, AnyAction> 
-= createStore( rootReducer, undefined, applyMiddleware( thunk ) );
-    return store;
-}
-```
+    export default function configureStore(): Store<IApplicationState> {
+        console.log("Store:configureStore");
+        const store: Store< IApplicationState, AnyAction> 
+    = createStore( rootReducer, undefined, applyMiddleware( thunk ) );
+        return store;
+    }
+    ```
     The redux store is a place where we store all the state we need to have in the system, at least all the state that shall be shared between components. (But we might as well keep everything in there to keep things simple.) In our example we have only a Boolean, but normally we would have a lot in a hierarchical structure. IRainingState is an interface that is defined in a file named RainingTypes.ts:
 
-```typescript
-export interface IRainingState {
-    readonly rainState: boolean;
-}
-```
-So, the store has an IRainingState (which takes care of the Raining stuff in out application), which holds the rainState Boolean.
-Which you can see is used by RightComp’s mapStateToProps to set the local props.
+    ```typescript
+    export interface IRainingState {
+        readonly rainState: boolean;
+    }
+    ```
+    So, the store has an IRainingState (which takes care of the Raining stuff in our application), which holds the rainState Boolean.
+    Which you can see is used by RightComp’s mapStateToProps to set the local props.
 
-    1.	We combine Reducers, but we only have one in our example. Well, normally you would have several reducers and you register them here (so that they will be called later).
-    2.	We could create a simpler store, without the thunk middleware nonsense. But to be able to call web or rest services we need to be able to handle asynchronous calls, and that is what the thunk middleware gives us. I do not call anything asynchronously in this example, but I’ve kept it since you are going to use it anyway. (I plan to make a version of this example that does this.)
+    1.	We combine Reducers, but we only have one in our example. Normally you would have several reducers and you register them here (so that they will be called later).
+    2.	We could create a simpler store, without the thunk middleware nonsense for this example. But to be able to call web or rest services we need to be able to handle asynchronous calls, and that is what the thunk middleware gives us. I do not call anything asynchronously in this example, but I’ve kept it since you are going to use it anyway. (See the 4th example in this series.)
 
-11. Now the time for the details has come, we cannot avoid it anymore. Let’s start with the types file:
-```typescript
-export enum RainingActionTypes {
-    TOGGLERAIN = "RAIN/TOGGLE"
-}
+1. Now the time for the details has come, we cannot avoid it anymore. Let’s start with the types file:
+    ```typescript
+    export enum RainingActionTypes {
+        TOGGLERAIN = "RAIN/TOGGLE"
+    }
 
-export interface IRainingState {
-    readonly rainState: boolean;
-}
+    export interface IRainingState {
+        readonly rainState: boolean;
+    }
 
-export interface IRainingCheckboxClickAction {
-    type: RainingActionTypes.TOGGLERAIN;
-}
+    export interface IRainingCheckboxClickAction {
+        type: RainingActionTypes.TOGGLERAIN;
+    }
 
-export type RainingActions = IRainingCheckboxClickAction;
-```
-12. 
+    export type RainingActions = IRainingCheckboxClickAction;
+    ```
+
     1.  The enum on the top gives us a simple and typesafe way of identifying the actions. As you see, the enum is actually a string, and it is very important that they are unique. This is achieved by using a hierarchical structure with the “RAIN” part being common for all the actions in this part of the application.
-    2.  The IRainingState interface was covered before in section 10.
-    3.	The IRainingCheckboxClickAction is interesting. It contains nothing except the type, which such action interfaces must have. And as you see it is set to RainingActionTypes.TOGGLERAIN, which means that it must have this value only, and no other will be tolerated by the typescript compiler. This is very nice, because it will help you avoid an error.
-    4.	Finally, we have the RainingActions, which, if we had more than one action, would be or’d together so that we have a combined type that only will accept actions from the set that has to do with the raining. This is how it would look of we had two actions:
+    1.  The IRainingState interface was covered before in section 10.
+    1.	The IRainingCheckboxClickAction is interesting. It contains nothing except the type, which such action interfaces must have. And as you see it is set to RainingActionTypes.TOGGLERAIN, which means that it must have this value only, and no other will be tolerated by the typescript compiler. This is very nice, because it will help you avoid an error.
+    1.	Finally, we have the RainingActions, which, if we had more than one action, would be or’d together so that we have a combined type that only will accept actions from the set that has to do with the raining. This is how it would look of we had two actions:
 
-```typescript
-export enum RainingActionTypes {
-    TOGGLERAIN = "RAIN/TOGGLE"
-}
+    ```typescript
+    export enum RainingActionTypes {
+        TOGGLERAIN = "RAIN/TOGGLE"
+    }
 
-export interface IRainingState {
-    readonly rainState: boolean;
-}
+    export interface IRainingState {
+        readonly rainState: boolean;
+    }
 
-export interface IRainingCheckboxClickAction {
-    type: RainingActionTypes.TOGGLERAIN;
-}
+    export interface IRainingCheckboxClickAction {
+        type: RainingActionTypes.TOGGLERAIN;
+    }
 
-export interface IRainingEnterAmountAction {
-    type: RainingActionTypes.ENTERRAINAMOUNT;
-    rainAmount: number;
-}
+    export interface IRainingEnterAmountAction {
+        type: RainingActionTypes.ENTERRAINAMOUNT;
+        rainAmount: number;
+    }
 
-export type RainingActions
- = | IRainingCheckboxClickAction | IRainingEnterAmountAction;
-```
-13.	The action file:
-```typescript
-import { RainingActionTypes, IRainingCheckboxClickAction }
- from "./RainingTypes";
-import { ActionCreator } from "redux";
+    export type RainingActions
+    = | IRainingCheckboxClickAction | IRainingEnterAmountAction;
+    ```
+1.	The action file:
+    ```typescript
+    import { RainingActionTypes, IRainingCheckboxClickAction }
+    from "./RainingTypes";
+    import { ActionCreator } from "redux";
 
-export const toggleRain: ActionCreator<IRainingCheckboxClickAction>
-   = () => {
-    console.log("RainingActions:toggleRain");
-    return {
-        type: RainingActionTypes.TOGGLERAIN
+    export const toggleRain: ActionCreator<IRainingCheckboxClickAction>
+    = () => {
+        console.log("RainingActions:toggleRain");
+        return {
+            type: RainingActionTypes.TOGGLERAIN
+        };
     };
-};
-```
+    ```
     This file should perhaps be called the action creator file, since the only thing in here is the toggleRain Action-creator function. If you have any need to call a rest service, you would do it here. You can see this function being called in LeftComp’s mapDispatchToProps.
 
 
-14.	The reducer file:
-```typescript
-import { Reducer } from "redux";
-import { RainingActions, RainingActionTypes, IRainingState } 
-from "./RainingTypes";
+1.	The reducer file:
+    ```typescript
+    import { Reducer } from "redux";
+    import { RainingActions, RainingActionTypes, IRainingState } 
+    from "./RainingTypes";
 
-const initialRainingState: IRainingState = {
-    rainState: false
-};
+    const initialRainingState: IRainingState = {
+        rainState: false
+    };
 
-export const rainingReducer: Reducer< IRainingState, RainingActions>
- = (state = initialRainingState, action) => {
-    console.log("Reducers called", action.type );
-    switch( action.type ) {
-        case RainingActionTypes.TOGGLERAIN: {
-            console.log("rainingReducer", state);
-            return {
-                ...state,
-                rainState: !state.rainState
-            };
+    export const rainingReducer: Reducer< IRainingState, RainingActions>
+    = (state = initialRainingState, action) => {
+        console.log("Reducers called", action.type );
+        switch( action.type ) {
+            case RainingActionTypes.TOGGLERAIN: {
+                console.log("rainingReducer", state);
+                return {
+                    ...state,
+                    rainState: !state.rainState
+                };
+            }
         }
-    }
-    return state || initialRainingState;
-};
-```
-15. 
+        return state || initialRainingState;
+    };
+    ```
+
     1. The reducer is inserted into the system in the store file.	
     1. We start by defining an initial state; we start with the checkbox not checked. This is the default. But since we are not setting the checkbox value/checked state, if we set this initial state to true the checkbox will not be checked. More about that in the next example.
     1.	Then we have the reducer function, which is actually really easy. It is called with a state and an action, and the first time it will be called with that initial state set.
@@ -333,36 +342,36 @@ export const rainingReducer: Reducer< IRainingState, RainingActions>
     1.	The final: if we get past the switch, and have a state, we return that, else we return the initial state.
 
 1.	The css file:
-```css
-.comp-container-A {
-  display: table;
-  overflow: hidden;
-  width: 100%;
-}
+    ```css
+    .comp-container-A {
+    display: table;
+    overflow: hidden;
+    width: 100%;
+    }
 
-.comp-container-B {
-  display: table-cell;
-  vertical-align: middle;
-  height: 200px;
-}
+    .comp-container-B {
+    display: table-cell;
+    vertical-align: middle;
+    height: 200px;
+    }
 
-.LeftComp {
-  background-color: #7AD9FF;
-}
-.RightComp {
-  background-color: lightsalmon;
-}
-```
+    .LeftComp {
+    background-color: #7AD9FF;
+    }
+    .RightComp {
+    background-color: lightsalmon;
+    }
+    ```
     Just insert this at the end of the file
 
-17.	Aaaaand that should be it.
-If you do these things, make these functions, react-redux will call them for you in a manner that makes all this work. 
+1.	Aaaaand that should be it.
+    If you do these things, make these functions, react-redux will call them for you in a manner that makes all this work. 
 
-    What helped me was to see the sequence the functions was called in.
-Here is when the application starts up:
-![Components viewed in Console during startup](img/screenshot4.png)
+        What helped me was to see the sequence the functions was called in.
+    Here is when the application starts up:
+    ![Components viewed in Console during startup](img/screenshot4.png)
 
-18.
+1.
     1.	As you see, the reducer is called twice first, but with an to us, unknown type. So we can ignore those calls.
     1.	Then index is called, which calls the Store.configureStore.
     1.	Another of those reducer calls, also safely ignored.
@@ -372,15 +381,9 @@ Here is when the application starts up:
     1.	Then, LeftComp.render is called
     1.	Then RightComp is given props and rendered
 
-19. Here is when I click the checkbox:
+1. Here is when I click the checkbox:
 
-
-
-
-
-![Components viewed in Console during click](img/screenshot5.png)
-
-20.
+    ![Components viewed in Console during click](img/screenshot5.png)
     1.	First, the LeftComp.handleCheckboxClick is called. That makes sense, we hooked it up to be called in the rendering. It calls the toggleRain function.
     1.	So, the RainingActions.toggleRain action creator function is called. Here we create an action which only contains the type RAIN/TOGGLE. (Normally, there would also be some data here, the payload. Typically, the payload would be fetched from a web service.) 
     1.	Then the reducers are called, this time with the type created in the previous step. 
