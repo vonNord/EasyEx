@@ -150,7 +150,8 @@ And then, when you click:
         Which makes far more sense to me.
         (see https://blog.jakoblind.no/redux-connect-subscribe/ for more on this subject.)
 
-    1.  Notice that we export the return value from the connect as default here. This is important. When App.tsx imports something it calls LeftComp, it is not the LeftComp component, but rather the connect return value. The real return value is a component that wraps the LeftComp.
+    1.  Notice that we export the return value from the connect as default here. *This is important.*      
+        When App.tsx imports something it calls LeftComp, it is not the LeftComp component, but rather the connect return value. The real return value is a component that wraps the LeftComp.
     
         When we look at the app from the Components view in React Developer Tools in chrome (or firefox), we see that there are two layers between the App’s div and the real LeftComp. One called “LeftComp” (which is like a fake facade) and the second one is a Context.Provider.
         
@@ -367,7 +368,7 @@ And then, when you click:
 1.	Aaaaand that should be it.
     If you do these things, make these functions, react-redux will call them for you in a manner that makes all this work. 
 
-        What helped me was to see the sequence the functions was called in.
+1.  What helped me was to see the sequence the functions was called in.
     Here is when the application starts up:
     ![Components viewed in Console during startup](img/screenshot4.png)
 
