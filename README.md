@@ -392,8 +392,10 @@ Here is when the application starts up:
 
 And then we're done!
 
+Except that we are not really done.
 
-```tsx
-```
-```typescript
-```
+I made some more examples built on this one:
+*   https://github.com/vonNord/EasyEx
+*   https://github.com/vonNord/EasyEx_2
+*   https://github.com/vonNord/EasyEx_3
+*   https://github.com/vonNord/EasyEx_4
