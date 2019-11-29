@@ -34,7 +34,7 @@ And then, when you click:
 
 1.	Open the easyex folder with VS Code
 
-1.	Open index.tsx. We need to make a top level component “Root” because we want to wrapp all components with the react-redux Provider component. The Provider holds the store and cooperates with the connect function to give the components in the Left and Right components the props they need.
+1.	Open index.tsx. We need to make a top-level component “Root” because we want to wrapp all components with the react-redux Provider component. The Provider holds the store and cooperates with the connect function to give the components in the Left and Right components the props they need.
 
     ```tsx
     import React from "react";
@@ -128,7 +128,7 @@ And then, when you click:
     ```
 
     As you see, lots and lots of details here, but let us focus on the important stuff:
-    1.	Let's start with the render function, which mostly tries to center the content, but also manages to hook up the onChange function on the checkbox to handleCheckboxClick. This function is obviously central in changing the state.
+    1.	Let's start with the return part of the component (render function): ```<input type="checkbox" onChange={handleCheckboxClick} />```. This line manages to hook up the onChange function on the checkbox to handleCheckboxClick. This function is obviously central in changing the state.
     1.  Let's look at the handleCheckboxClick function then. It just calls the props onCheckboxClick function. 
     1.  Which leads our investigation to the props interface. We have a Props interface that only contains a function. But wht wil happen when that props function is called?
     1.  The answer is in the mapDispatchToProps function. It instructs react-redux what to do when the onCheckboxClick function is called. As you see, it will provide you with a dispatcher, which you use to call the toggleRain function. (toggleRain will create an Action which will call the reducer which will update the store. But we are getting a little ahead of ourselves here.)
@@ -226,9 +226,9 @@ And then, when you click:
     ```
     This file should perhaps be called the action creator file, since the only thing in here is the toggleRain Action-creator function.
 
-    The toggleRain function returns an object that only has one property; a property named "type" that has an enum value as its type. And can therfor not be anything else than exactly that enum value(!)
+    The toggleRain function returns an object that only has one property; a property named "type" that has an enum value as its type. And can therfore not be anything else than exactly that enum value(!)
 
-    These action creator functions have many vriants, and in the other examples in this series I will look into variations of them. You will often find that you have some data in such an event. This data is often refered to as the "payload" and are inserted into the return object.
+    These action creator functions have many variants, and in the other examples in this series I will investigate variations of them. You will often find that you have some data in such an event. This data is often refered to as the "payload" and are inserted into the return object.
 
     If you have any need to call a rest service, you would do it here. You can see this function being called in LeftComp’s mapDispatchToProps.
 
@@ -314,7 +314,7 @@ And then, when you click:
     2.	We could create a simpler store, without the thunk middleware nonsense for this example. But to be able to call web or rest services we need to be able to handle asynchronous calls, and that is what the thunk middleware gives us. I do not call anything asynchronously in this example, but I’ve kept it since you are going to use it anyway. (See the 4th example in this series.)
 
 
-> So, the user checks the checkbox in LeftComp. This is reported by creating an action. The action is run through a reducer, who updates the store for us. Now lets see how another component can benefit from this.
+> So, the user checks the checkbox in LeftComp. This is reported by creating an action. The action is run through a reducer, who updates the store for us. Now let's see how another component can benefit from this.
 
 
 8.	Let us take a look at RightComp:
@@ -388,7 +388,7 @@ And then, when you click:
 1.	Aaaaand that should be it.
     If you do these things, make these functions, react-redux will call them for you in a manner that makes all this work. 
 
-1.  What helped me was to see the sequence the functions was called in.
+1.  What helped me was to see the sequence the functions were called in.
     Here is when the application starts up:
     ![Components viewed in Console during startup](img/screenshot4.png)
 
