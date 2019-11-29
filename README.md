@@ -157,93 +157,11 @@ And then, when you click:
         
         The Context.Provider will use the two functions, mapDispatchToProps and mapStateToProps, to create the LeftComp’s props for you. And when the props change, React will call render which will draw the component (again).
 
-![Components viewed in Raact Developer tools](img/screenshot3.png)
-    
-8.	We then look at the RightComponent:
-    ```tsx
-    import * as React from "react";
+    ![Components viewed in Rect Developer tools](img/screenshot3.png)
 
-    import { connect } from "react-redux";
-    import { IApplicationState } from "../Store";
+    >IApplicationState? There are some types that we must declare befor we go on:
 
-    interface IProps {
-        isItRaining: boolean;
-    }
-
-    const RightComp: React.SFC<IProps> = (props: IProps) => {
-        console.log("RightComp:rendering", props.isItRaining );
-        return (
-            <div className="comp-container RightComp">
-                RightComp
-                <div className="comp-container-A">
-                    <div className="comp-container-B">
-                        <h1>{props.isItRaining 
-                    ? "Its raining. Better bring an umbrella, then." 
-                    : "Its not raining!"}
-                </h1>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
-    const mapStateToProps = (store: IApplicationState) => {
-        console.log("RightComp:mapStateToProps", store.rain.rainState);
-        return {
-            isItRaining: store.rain.rainState
-        };
-    };
-
-    const connected = connect( mapStateToProps );
-    export default connected(RightComp);
-    ```
-    1.	This component has a props with only a Boolean, isItRaining, which reflects the state of the checkbox.
-    1.	It uses this props to use one of the two texts to show in the return (render) part.
-    1.	Since the component doesn’t change any state, it doesn’t have any mapDispatchToProps function.
-    1.	It has a mapStateToProps function, which takes the store.rain.rainState and uses it to set the local props isItRaining.
-    1.	Finally, we call the connect function, like before.
-
-
-    >*So, a little timeout: We have the two components. The left has a checkbox. When a user toggles this checkbox, the component updates the state in the store. react-redux observes that the state that the right component uses is changed and updates the component.*
-
-1.  The store? 
-    ```typescript
-    import { applyMiddleware, combineReducers, createStore, Store, AnyAction 
-    } from "redux";
-    import thunk from "redux-thunk";
-
-    import { rainingReducer } from "./raining/RainingReducer";
-    import { IRainingState } from "./raining/RainingTypes";
-
-    export interface IApplicationState {
-        rain: IRainingState;
-    }
-
-    const rootReducer = combineReducers<IApplicationState>({
-        rain: rainingReducer
-    });
-
-    export default function configureStore(): Store<IApplicationState> {
-        console.log("Store:configureStore");
-        const store: Store< IApplicationState, AnyAction> 
-    = createStore( rootReducer, undefined, applyMiddleware( thunk ) );
-        return store;
-    }
-    ```
-    The redux store is a place where we store all the state we need to have in the system, at least all the state that shall be shared between components. (But we might as well keep everything in there to keep things simple.) In our example we have only a Boolean, but normally we would have a lot in a hierarchical structure. IRainingState is an interface that is defined in a file named RainingTypes.ts:
-
-    ```typescript
-    export interface IRainingState {
-        readonly rainState: boolean;
-    }
-    ```
-    So, the store has an IRainingState (which takes care of the Raining stuff in our application), which holds the rainState Boolean.
-    Which you can see is used by RightComp’s mapStateToProps to set the local props.
-
-    1.	We combine Reducers, but we only have one in our example. Normally you would have several reducers and you register them here (so that they will be called later).
-    2.	We could create a simpler store, without the thunk middleware nonsense for this example. But to be able to call web or rest services we need to be able to handle asynchronous calls, and that is what the thunk middleware gives us. I do not call anything asynchronously in this example, but I’ve kept it since you are going to use it anyway. (See the 4th example in this series.)
-
-1. Now the time for the details has come, we cannot avoid it anymore. Let’s start with the types file:
+1. Here is the types file:
     ```typescript
     export enum RainingActionTypes {
         TOGGLERAIN = "RAIN/TOGGLE"
@@ -267,7 +185,8 @@ And then, when you click:
 
     ```typescript
     export enum RainingActionTypes {
-        TOGGLERAIN = "RAIN/TOGGLE"
+        TOGGLERAIN = "RAIN/TOGGLE",
+        ENTERRAINAMOUNT = "RAIN/ENTERAMOUNT"
     }
 
     export interface IRainingState {
@@ -286,7 +205,12 @@ And then, when you click:
     export type RainingActions
     = | IRainingCheckboxClickAction | IRainingEnterAmountAction;
     ```
-1.	The action file:
+
+
+
+>But let's look at that toggleRain function we just used in LeftComp:
+
+1.	We find it in the action file:
     ```typescript
     import { RainingActionTypes, IRainingCheckboxClickAction }
     from "./RainingTypes";
@@ -300,8 +224,16 @@ And then, when you click:
         };
     };
     ```
-    This file should perhaps be called the action creator file, since the only thing in here is the toggleRain Action-creator function. If you have any need to call a rest service, you would do it here. You can see this function being called in LeftComp’s mapDispatchToProps.
+    This file should perhaps be called the action creator file, since the only thing in here is the toggleRain Action-creator function.
 
+    The toggleRain function returns an object that only has one property; a property named "type" that has an enum value as its type. And can therfor not be anything else than exactly that enum value(!)
+
+    These action creator functions have many vriants, and in the other examples in this series I will look into variations of them. You will often find that you have some data in such an event. This data is often refered to as the "payload" and are inserted into the return object.
+
+    If you have any need to call a rest service, you would do it here. You can see this function being called in LeftComp’s mapDispatchToProps.
+
+
+    > But back to the big picture here; what happens to this returned action object? It is sent to the reducer as the "action" parameter:
 
 1.	The reducer file:
     ```typescript
@@ -341,6 +273,94 @@ And then, when you click:
         1.	finally we overwrite the values with the ones we would like to change.
     1.	It is a bit unusual to just toggle the state.rain as we do here. Normally we would take data from the action and use that. More about this in the next example.
     1.	The final: if we get past the switch, and have a state, we return that, else we return the initial state.
+
+>But,...where is it going? Who is holding the data? The store???
+
+1.  The store! 
+    ```typescript
+    import { applyMiddleware, combineReducers, createStore, Store, AnyAction 
+    } from "redux";
+    import thunk from "redux-thunk";
+
+    import { rainingReducer } from "./raining/RainingReducer";
+    import { IRainingState } from "./raining/RainingTypes";
+
+    export interface IApplicationState {
+        rain: IRainingState;
+    }
+
+    const rootReducer = combineReducers<IApplicationState>({
+        rain: rainingReducer
+    });
+
+    export default function configureStore(): Store<IApplicationState> {
+        console.log("Store:configureStore");
+        const store: Store< IApplicationState, AnyAction> 
+    = createStore( rootReducer, undefined, applyMiddleware( thunk ) );
+        return store;
+    }
+    ```
+    The redux store is a place where we store all the state we need to have in the system, at least all the state that shall be shared between components. (But we might as well keep everything in there to keep things simple.) In our example we have only a Boolean, but normally we would have a lot in a hierarchical structure. IRainingState is an interface that is defined in a file named RainingTypes.ts:
+
+    ```typescript
+    export interface IRainingState {
+        readonly rainState: boolean;
+    }
+    ```
+    So, the store has an IRainingState (which takes care of the Raining stuff in our application), which holds the rainState Boolean.
+    Which you can see is used by RightComp’s mapStateToProps to set the local props.
+
+    1.	We combine Reducers, but we only have one in our example. Normally you would have several reducers and you register them here (so that they will be called later).
+    2.	We could create a simpler store, without the thunk middleware nonsense for this example. But to be able to call web or rest services we need to be able to handle asynchronous calls, and that is what the thunk middleware gives us. I do not call anything asynchronously in this example, but I’ve kept it since you are going to use it anyway. (See the 4th example in this series.)
+
+
+> So, the user checks the checkbox in LeftComp. This is reported by creating an action. The action is run through a reducer, who updates the store for us. Now lets see how another component can benefit from this.
+
+
+8.	Let us take a look at RightComp:
+    ```tsx
+    import * as React from "react";
+
+    import { connect } from "react-redux";
+    import { IApplicationState } from "../Store";
+
+    interface IProps {
+        isItRaining: boolean;
+    }
+
+    const RightComp: React.SFC<IProps> = (props: IProps) => {
+        console.log("RightComp:rendering", props.isItRaining );
+        return (
+            <div className="comp-container RightComp">
+                RightComp
+                <div className="comp-container-A">
+                    <div className="comp-container-B">
+                <h1>{props.isItRaining 
+                    ? "Its raining. Better bring an umbrella, then." 
+                    : "Its not raining!"}
+                </h1>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    const mapStateToProps = (store: IApplicationState) => {
+        console.log("RightComp:mapStateToProps", store.rain.rainState);
+        return {
+            isItRaining: store.rain.rainState
+        };
+    };
+
+    const connected = connect( mapStateToProps );
+    export default connected(RightComp);
+    ```
+    1.	This component has a props with only a Boolean, isItRaining, which reflects the state of the checkbox.
+    1.	It uses this props to figure out which one of the two texts to show in the return (render) part.
+    1.	Since the component doesn’t change any state, it doesn’t have any mapDispatchToProps function.
+    1.	It has a mapStateToProps function, which takes the store.rain.rainState and uses it to set the local props isItRaining.
+    1.	Finally, we call the connect function, like before.
+
 
 1.	The css file:
     ```css
@@ -396,10 +416,10 @@ And then, when you click:
 
 And then we're done!
 
-Except that we are not really done.
+Except that we are not really done. This example is very, very simple, almost too simple. I try to make it a little more realistic in the rest of the examples.
 
 I made some more examples built on this one:
-*   https://github.com/vonNord/EasyEx
+*   https://github.com/vonNord/EasyEx   (this example)
 *   https://github.com/vonNord/EasyEx_2
 *   https://github.com/vonNord/EasyEx_3
 *   https://github.com/vonNord/EasyEx_4
